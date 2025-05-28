@@ -1,0 +1,62 @@
+// TODO nf-core: Once you have added the required tests, please run the following command to build this file:
+// nf-core modules test callratioanddepth
+nextflow_process {
+
+    name "Test Process CALLRATIOANDDEPTH"
+    script "../main.nf"
+    process "CALLRATIOANDDEPTH"
+
+    tag "modules"
+    tag "modules_"
+    tag "callratioanddepth"
+
+    test("test bed processing") {
+        when {
+            process {
+                """
+                input[0] = [
+                    [ id:'test' ], // meta map
+                    file(params.modules_testdata_base_path + 'genomics/test/test.bed', checkIfExists: true),
+                    file(params.modules_testdata_base_path + 'genomics/test/test.sizes', checkIfExists: true)
+                ]
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.success },
+                { assert snapshot(process.out).match() },
+                { assert process.out.sites[0][1].exists() },
+                { assert process.out.ratio[0][1].exists() },
+                { assert process.out.depth[0][1].exists() }
+            )
+        }
+    }
+
+    test("test bed processing - stub") {
+        options "-stub"
+
+        when {
+            process {
+                """
+                input[0] = [
+                    [ id:'test' ], // meta map
+                    file(params.modules_testdata_base_path + 'genomics/test/test.bed', checkIfExists: true),
+                    file(params.modules_testdata_base_path + 'genomics/test/test.sizes', checkIfExists: true)
+                ]
+                """
+            }
+        }
+
+        then {
+            assertAll(
+                { assert process.success },
+                { assert snapshot(process.out).match() },
+                { assert process.out.sites[0][1].exists() },
+                { assert process.out.ratio[0][1].exists() },
+                { assert process.out.depth[0][1].exists() }
+            )
+        }
+    }
+}

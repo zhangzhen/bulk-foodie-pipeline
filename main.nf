@@ -36,7 +36,11 @@ workflow ZHANGZHEN_BULKFOODIEPIPELINE {
     // WORKFLOW: Run pipeline
     //
     BULKFOODIEPIPELINE (
-        samplesheet
+        samplesheet,
+        params.fasta,
+        params.sizes,
+        params.bismark_index,
+        params.genome_id
     )
     emit:
     multiqc_report = BULKFOODIEPIPELINE.out.multiqc_report // channel: /path/to/multiqc_report.html

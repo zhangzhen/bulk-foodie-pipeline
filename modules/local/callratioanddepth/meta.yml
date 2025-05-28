@@ -1,0 +1,66 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/modules/meta-schema.json
+name: "callratioanddepth"
+## TODO nf-core: Add a description of the module and list keywords
+description: "Process for calculating ratio and depth from bed files"
+keywords:
+  - ratio
+  - depth
+  - bed
+  - genomics
+tools:
+  - "callratioanddepth":
+      ## TODO nf-core: Add a description and other details for the software below
+      description: "Calculate ratio and depth from bed files"
+      homepage: ""
+      documentation: ""
+      tool_dev_url: ""
+      doi: ""
+      licence: 
+      identifier: 
+
+## TODO nf-core: Add a description of all of the variables used as input
+input:
+  - meta:
+      type: map
+      description: |
+        Groovy Map containing sample information
+        e.g. `[ id:'sample1' ]`
+  - bed:
+      type: file
+      description: BED file containing genomic regions
+      pattern: "*.bed"
+  - sizes:
+      type: file
+      description: File containing chromosome sizes
+      pattern: "*.sizes"
+
+## TODO nf-core: Add a description of all of the variables used as output
+output:
+  - meta:
+      type: map
+      description: |
+        Groovy Map containing sample information
+        e.g. `[ id:'sample1' ]`
+  - "*_sites.txt":
+      type: file
+      description: Processed sites file
+      pattern: "*_sites.txt"
+  - "*_ratio.igv":
+      type: file
+      description: IGV format file containing ratio information
+      pattern: "*_ratio.igv"
+  - "*_depth.igv":
+      type: file
+      description: IGV format file containing depth information
+      pattern: "*_depth.igv"
+  - versions:
+    - "versions.yml":
+        type: file
+        description: File containing software versions
+        pattern: "versions.yml"
+
+authors:
+  - "@zhangzhen"
+maintainers:
+  - "@zhangzhen"
