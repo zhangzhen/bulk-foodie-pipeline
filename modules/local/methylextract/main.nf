@@ -24,9 +24,7 @@ process METHYLEXTRACT {
     //               For Conda, the build (i.e. "h9402c20_2") must be EXCLUDED to support installation on different operating systems.
     // TODO nf-core: See section in main README for further information regarding finding and adding container addresses to the section below.
     conda "${moduleDir}/environment.yml"
-    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/methylextract:1.9.1--0':
-        'biocontainers/methylextract:1.9.1--0' }"
+    container "docker.io/zhangzhen0226/fditools:python-3.10_numpy-1.23.5_pysam-0.19.1--6431b61916d49f88"
 
     input:
     // TODO nf-core: Where applicable all sample-specific information e.g. "id", "single_end", "read_group"

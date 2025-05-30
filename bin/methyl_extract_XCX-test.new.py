@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#! /usr/bin/env python
 
 '''
 methylation extracting for single molecule footprinting
@@ -53,7 +53,6 @@ parser.add_argument("-t", "--trimming_Tn5", type = int, default = 15)
 parser.add_argument("-q", "--map_quality_filter", type = int, default = 5)
 parser.add_argument("--ATAC", type = str, default = 'Y')
 parser.add_argument("--remove_chimera", type = str, default = 'Y')
-parser.add_argument("--cell_prefix", type=str, required=True)
 
 tag_dict = {
     'ACA':'A', 'ACT':'B', 'ACC':'C', 'ACG':'D', 
@@ -132,7 +131,7 @@ def get_counts(methyl):
             ans[tag2id[i]] += 1
     return ans
 
-def read2Bed(read1, read2, trim, ATAC,remove_chimera, cell_prefix):
+def read2Bed(read1, read2, trim, ATAC,remove_chimera):
     isRev1 = '+'
     if read1.is_reverse:
         isRev1 = '-'
@@ -142,7 +141,6 @@ def read2Bed(read1, read2, trim, ATAC,remove_chimera, cell_prefix):
     refPos1 = np.array(read1.get_reference_positions(True))
     XR1 = read1.get_tag("XR")
     XG1 = read1.get_tag("XG")
-    CB1 = read1.get_tag("CB")
     refStart1 = read1.reference_start
     refEnd1 = read1.reference_end
     refSeq1 = read1.get_reference_sequence()
@@ -229,13 +227,11 @@ def read2Bed(read1, read2, trim, ATAC,remove_chimera, cell_prefix):
     assert(len(methyl1) == (refEnd1-refStart1))
     assert(len(methyl2) == (refEnd2-refStart2))
 
-    full_cell_barcode = f"{cell_prefix}_{CB1}"
-
     bedstring1 = '\t'.join(
-        [ch1, str(refStart1), str(refEnd1), readName1+'/'+methyl1, '.', isRev1, XG1, full_cell_barcode]
+        [ch1, str(refStart1), str(refEnd1), readName1+'/'+methyl1, '.', isRev1, XG1]
     )
     bedstring2 = '\t'.join(
-        [ch2, str(refStart2), str(refEnd2), readName2+'/'+methyl2, '.', isRev2, XG1, full_cell_barcode]
+        [ch2, str(refStart2), str(refEnd2), readName2+'/'+methyl2, '.', isRev2, XG1]
     )
     cnt = get_counts(methyl1) + get_counts(methyl2)
     return cnt, bedstring1, bedstring2
@@ -252,7 +248,6 @@ def main():
     lowq = args.map_quality_filter
     ATAC = args.ATAC
     remove_chimera = args.remove_chimera
-    cell_prefix = args.cell_prefix
     # print(ATAC,remove_chimera)
     counts = np.zeros(len(tags), dtype = int)
     refresh_count = 0
@@ -271,11 +266,11 @@ def main():
                 if not (read1.mapping_quality > lowq and read2.mapping_quality > lowq):
                     continue
                 # try:
-                #     cnt, bedstring1, bedstring2 = read2Bed(read1, read2, trim, ATAC,remove_chimera, cell_prefix)
+                #     cnt, bedstring1, bedstring2 = read2Bed(read1, read2, trim, ATAC,remove_chimera)
                 # except:
                 #     continue
                 
-                cnt, bedstring1, bedstring2 = read2Bed(read1, read2, trim, ATAC,remove_chimera, cell_prefix)
+                cnt, bedstring1, bedstring2 = read2Bed(read1, read2, trim, ATAC,remove_chimera)
 
                 if bedstring1==None: # too short reads or chimera reads or unconverted reads
                     continue

@@ -22,6 +22,8 @@ include { IGVTOOLS_TOTDF as IGVTOOLS_TOTDF_RATIO } from '../modules/local/igvtoo
 include { IGVTOOLS_TOTDF as IGVTOOLS_TOTDF_DEPTH } from '../modules/local/igvtools/totdf/main'
 include { HIGHSCOREPEAKS } from '../modules/local/highscorepeaks/main'
 include { PLOT } from '../modules/local/plot/main'
+include { BEDTOOLS_INTERSECT } from '../modules/nf-core/bedtools/intersect/main'
+include { PLOTTSS } from '../modules/local/plottss/main'
 include { MULTIQC                } from '../modules/nf-core/multiqc/main'
 include { paramsSummaryMultiqc   } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pipeline'
@@ -41,6 +43,7 @@ workflow BULKFOODIEPIPELINE {
     ch_sizes // channel: sizes file
     ch_bismark_index   // channel: [ path(bismark index)   ]
     genome_id
+    tss
 
     main:
 
@@ -79,8 +82,8 @@ workflow BULKFOODIEPIPELINE {
 
     BISMARK_ALIGN (
         TRIMGALORE.out.reads,
-        ch_fasta,
-        ch_bismark_index
+        [[:], file(ch_fasta, checkIfExists: true)],
+        [[:], file(ch_bismark_index, checkIfExists: true)]
     )
     ch_alignments        = BISMARK_ALIGN.out.bam
     ch_alignment_reports = BISMARK_ALIGN.out.report.map{ meta, report -> [ meta, report, [] ] }
@@ -147,10 +150,10 @@ workflow BULKFOODIEPIPELINE {
     ch_versions = ch_versions.mix(UCSC_BEDGRAPHTOBIGWIG.out.versions)
 
     ch_bedpe = BEDTOOLS_GENOMECOV.out.genomecov.map { meta, bedpe -> 
-        [meta, bedpe, []] // empty list as placeholder
+        [meta, bedpe, []] // emptych_sizes list as placeholder
     }
     MACS2_CALLPEAK (
-        ch_bedpe,
+        ch_bedpe, // empty list as placeholder
         ch_sizes
     )
     ch_versions = ch_versions.mix(MACS2_CALLPEAK.out.versions)
@@ -178,6 +181,13 @@ workflow BULKFOODIEPIPELINE {
         CALLRATIOANDDEPTH.out.sites,
         genome_id,
         'igv'
+    )
+
+    BEDTOOLS_INTERSECT(
+        CALLRATIOANDDEPTH.out.sites.map { meta, sites -> 
+            [meta, sites, file(tss, checkIfExists: true)]
+        },
+        [[:], ch_sizes]
     )
 
     //

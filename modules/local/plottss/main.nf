@@ -15,7 +15,7 @@
 // TODO nf-core: Optional inputs are not currently supported by Nextflow. However, using an empty
 //               list (`[]`) instead of a file can be used to work around this issue.
 
-process PLOT {
+process PLOTTSS {
     tag "$meta.id"
     label 'process_single'
 
@@ -24,7 +24,7 @@ process PLOT {
     //               For Conda, the build (i.e. "h9402c20_2") must be EXCLUDED to support installation on different operating systems.
     // TODO nf-core: See section in main README for further information regarding finding and adding container addresses to the section below.
     conda "${moduleDir}/environment.yml"
-    container "docker.io/zhangzhen0226/fditools:r-base-4.2.1_r-ggplot2-3.4.4_r-reshape2-1.4.4--57796b22c41e5d88"
+    container "docker.io/zhangzhen0226/fditools:r-base-4.3.3_r-data.table-1.17.0_r-dplyr-1.1.4_r-ggplot2-3.4.4--09ac7f1275c23466"
 
     input:
     // TODO nf-core: Where applicable all sample-specific information e.g. "id", "single_end", "read_group"
@@ -33,7 +33,7 @@ process PLOT {
     //               https://github.com/nf-core/modules/blob/master/modules/nf-core/bwa/index/main.nf
     // TODO nf-core: Where applicable please provide/convert compressed files as input/output
     //               e.g. "*.fastq.gz" and NOT "*.fastq", "*.bam" and NOT "*.sam" etc.
-    tuple val(meta), path(txt)
+    tuple val(meta), path(sites)
 
     output:
     // TODO nf-core: Named file extensions MUST be emitted for ALL output channels
@@ -57,7 +57,9 @@ process PLOT {
     // TODO nf-core: Please replace the example samtools command below with your module's command
     // TODO nf-core: Please indent the command appropriately (4 spaces!!) to help with readability ;)
     """
-    plot01.R -s ${prefix}
+    cat $sites | \\
+        awk 'BEGIN {OFS=\"\\t\"} {if (\$13 == \"+\") rel_pos = \$3 - \$10 + 500; else rel_pos = \$10 - \$3 - 500; print \$4, \$5, rel_pos}' | \\
+        conv_ratio_HK_TSS.R ${prefix} -
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
@@ -73,7 +75,7 @@ process PLOT {
     //               Simple example: https://github.com/nf-core/modules/blob/818474a292b4860ae8ff88e149fbcda68814114d/modules/nf-core/bcftools/annotate/main.nf#L47-L63
     //               Complex example: https://github.com/nf-core/modules/blob/818474a292b4860ae8ff88e149fbcda68814114d/modules/nf-core/bedtools/split/main.nf#L38-L54
     """
-    touch converted_ratio__${prefix}.pdf
+    touch ${prefix}_conv_ratio_HK_TSS.pdf
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

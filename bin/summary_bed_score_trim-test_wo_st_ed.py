@@ -38,8 +38,6 @@ with open(sys.argv[1], 'r') as bedin:
         names2,meth2 = r2[3].split('/')
         
         XG1, XG2 = r1[6], r2[6]
-
-        cell_barcode = r1[7]
         
         st1,ed1,st2,ed2 = list(map(int,[st1,ed1,st2,ed2]))
         st,ed = min(st1,st2),max(ed1,ed2)
@@ -57,7 +55,7 @@ with open(sys.argv[1], 'r') as bedin:
         st1_ed1_st2_ed2 = (f'{st1},{ed1},{st2},{ed2}' if st1<=st2 else f'{st2},{ed2},{st1},{ed1}')
     
         if sites_num > 0:
-            sys.stdout.write("\t".join([ch1, str(st), str(ed), names1, pos, score, XG1, str(sites_num), st1_ed1_st2_ed2, cell_barcode]) + "\n")
+            sys.stdout.write("\t".join([ch1, str(st), str(ed), names1, pos, score, XG1, str(sites_num), st1_ed1_st2_ed2]) + "\n")
 
         line1 = bedin.readline()
         line2 = bedin.readline()

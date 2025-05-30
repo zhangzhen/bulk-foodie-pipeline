@@ -40,7 +40,8 @@ workflow ZHANGZHEN_BULKFOODIEPIPELINE {
         params.fasta,
         params.sizes,
         params.bismark_index,
-        params.genome_id
+        params.genome_id,
+        params.tss
     )
     emit:
     multiqc_report = BULKFOODIEPIPELINE.out.multiqc_report // channel: /path/to/multiqc_report.html
@@ -67,7 +68,7 @@ workflow {
     )
 
     //
-    // WORKFLOW: Run main workflow
+    // WORKFLOW: Run main workflow/dshare/home/xiec/Research/prj/brain/rsl/5409/TSS_HK/ENCFF493CCB_HK_1k.bed
     //
     ZHANGZHEN_BULKFOODIEPIPELINE (
         PIPELINE_INITIALISATION.out.samplesheet

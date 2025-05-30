@@ -3,73 +3,91 @@ import numpy as np
 from scipy.stats import binom_test
 import pandas as pd
 
-line = sys.stdin.readline().strip()
+# Read chromosome sizes once and convert to dictionary for faster lookup
 chrom_sizes = pd.read_csv(sys.argv[1], header=None, index_col=0, sep="\t")
+chrom_sizes_dict = chrom_sizes[1].to_dict()
 
+# Initialize data structures
 regions = {}
 N = 0
 
-while line:
-    line = line.split('\t')
+# Process input line by line
+for line in sys.stdin:
+    line = line.strip().split('\t')
+    if not line:
+        continue
+        
     ch = line[0]
     st = int(line[1])
     ed = int(line[2])
     
-    if ch not in list(chrom_sizes.index):
-        line = sys.stdin.readline().strip()
-        continue    
+    if ch not in chrom_sizes_dict:
+        continue
     
     region = ch
-    st_r, ed_r = 0, chrom_sizes.loc[ch,1]
+    st_r, ed_r = 0, chrom_sizes_dict[ch]
 
+    # Initialize region data if not exists
     if region not in regions:
         length = ed_r - st_r
-        regions[region] = [region, [0]*length, [0]*length, ["N"]*length]
+        # Use numpy arrays instead of lists
+        regions[region] = {
+            'name': region,
+            'pos': np.zeros(length, dtype=np.int32),
+            'neg': np.zeros(length, dtype=np.int32),
+            'bases': np.full(length, 'N', dtype='U1')
+        }
+    r
+    # Parse sites and scores
+    sites = np.array([int(i) for i in line[4].split(',')], dtype=np.int32)
+    scores = np.array([int(i) for i in line[5].split(',')], dtype=np.int32)
+
+    C_or_G = 'C' if line[6] == "CT" else 'G' if line[6] == "GA" else None
+    if C_or_G is None:
+        raise ValueError(f"Invalid C_or_G value: {line[6]}")
+
+    # Calculate positions and update arrays
+    positions = st + sites
+    valid_mask = (positions >= st_r) & (positions < ed_r)
     
-    # sites = [int(i) for i in line[4].split(',')[1:-1]]
-    # scores = [int(i) for i in line[5].split(',')[1:-1]]
-    sites = [int(i) for i in line[4].split(',')]
-    scores = [int(i) for i in line[5].split(',')]
+    if np.any(valid_mask):
+        valid_positions = positions[valid_mask]
+        valid_scores = scores[valid_mask]
+        
+        # Update bases
+        regions[region]['bases'][valid_positions - st_r] = C_or_Gr
+        
+        # Update scores using boolean indexing
+        pos_mask = valid_scores == 1
+        neg_mask = valid_scores == 0
+        
+        if np.any(pos_mask):
+            regions[region]['pos'][valid_positions[pos_mask] - st_r] += 1
+        if np.any(neg_mask):
+            regions[region]['neg'][valid_positions[neg_mask] - st_r] += 1
 
-    C_or_G = line[6]
-    if C_or_G == "CT":
-        C_or_G = "C"
-    elif C_or_G == "GA":
-        C_or_G = "G"
-    else:
-        raise ValueError
-
-    for i in range(len(sites)):
-        site = sites[i]
-        score = scores[i]
-        pos = st+site
-        if pos >= st_r and pos < ed_r:
-            regions[region][3][pos-st_r] = C_or_G
-            if score == 1:
-                regions[region][1][pos-st_r] += 1
-            elif score == 0:
-                regions[region][2][pos-st_r] += 1
-            else:
-                raise ValueError
     N += 1
-    if (N%1000000 == 0):
-        sys.stderr.write("Processed: "+str(N)+"\n")
-    line = sys.stdin.readline().strip()
+    if N % 1000000 == 0:
+        sys.stderr.write(f"Processed: {N}\n")
 
-for i in regions:
-    region = regions[i]
-    length = chrom_sizes.loc[region[0],1]
-    pos = region[1]
-    neg = region[2]
-    for j in range(length):
-        if (pos[j] > 0 or neg[j] > 0):
-            score = pos[j]/(pos[j]+neg[j])
-        else:
-            score = "NA"
-#            score = binom_test(pos[j], n=pos[j]+neg[j], p=0.085,alternative="greater")
-#            if score < 1e-20:
-#                score = 20
-#            else:
-#                score = -np.log10(score)
-        sys.stdout.write("\t".join([region[0],str(j),str(j+1),str(pos[j]),str(neg[j]),str(score),region[3][j]])+"\n")
+# Output results
+for region_data in regions.values():
+    region = region_data['name']
+    pos = region_data['pos']
+    neg = region_data['neg']
+    bases = region_data['bases']
+    
+    # Calculate scores only for positions with data
+    data_mask = (pos > 0) | (neg > 0)
+    scores = np.full(len(pos), "NA", dtype='U10')
+    
+    if np.any(data_mask):
+        valid_pos = pos[data_mask]
+        valid_neg = neg[data_mask]
+        scores[data_mask] = (valid_pos / (valid_pos + valid_neg)).astype(str)
+    
+    # Output results
+    for j in range(len(pos)):
+        if data_mask[j]:
+            sys.stdout.write(f"{region}\t{j}\t{j+1}\t{pos[j]}\t{neg[j]}\t{scores[j]}\t{bases[j]}\n")
 
