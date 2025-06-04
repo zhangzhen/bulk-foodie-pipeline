@@ -58,7 +58,7 @@ process POSTPROCESSBED {
     // TODO nf-core: Please indent the command appropriately (4 spaces!!) to help with readability ;)
     """
     cat ${bed} | \\
-        awk 'BEGIN {OFS="\t"} length(\$1) <= 5 && \$8 >= 30 && (\$6-\$2) >=10 {print \$1, \$2 + 4, \$6 - 5}' | \\
+        awk 'BEGIN {OFS="\\t"} length(\$1) <= 5 && \$8 >= 30 && (\$6-\$2) >=10 {print \$1, \$2 + 4, \$6 - 5}' | \\
         sort -k1,1 -k2,2n > ${prefix}.frag.bed
 
     cat <<-END_VERSIONS > versions.yml

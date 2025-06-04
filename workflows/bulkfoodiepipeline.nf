@@ -3,7 +3,6 @@
     IMPORT MODULES / SUBWORKFLOWS / FUNCTIONS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
-// include { SEQKIT_SPLIT2 } from '../modules/nf-core/seqkit/split2/main'
 include { FASTQC } from '../modules/nf-core/fastqc/main'
 include { TRIMGALORE } from '../modules/nf-core/trimgalore/main'
 include { BISMARK_ALIGN } from '../modules/nf-core/bismark/align/main'
@@ -43,6 +42,7 @@ workflow BULKFOODIEPIPELINE {
     ch_sizes // channel: sizes file
     ch_bismark_index   // channel: [ path(bismark index)   ]
     genome_id
+    macs2_gsize
     tss
 
     main:
@@ -50,7 +50,7 @@ workflow BULKFOODIEPIPELINE {
     ch_versions = Channel.empty()
     ch_multiqc_files = Channel.empty()
 
-    // SEQKIT_SPLIT2(ch_samplesheet)
+    // SEQKIT_SPLIT2(ch_samplesheet)>
     // ch_versions = ch_versions.mix(SEQKIT_SPLIT2.out.versions)
 
     // ch_fastq_pieces = SEQKIT_SPLIT2.out.reads.flatMap { meta, chunk_list ->
@@ -154,7 +154,7 @@ workflow BULKFOODIEPIPELINE {
     }
     MACS2_CALLPEAK (
         ch_bedpe, // empty list as placeholder
-        ch_sizes
+        macs2_gsize
     )
     ch_versions = ch_versions.mix(MACS2_CALLPEAK.out.versions)
 
@@ -167,18 +167,17 @@ workflow BULKFOODIEPIPELINE {
     )
 
     CALLRATIOANDDEPTH (
-        CALLTRACK.out.summary_score_bed,
-        ch_sizes
+        CALLTRACK.out.summary_score_bed
     )
 
     IGVTOOLS_TOTDF_DEPTH(
-        CALLRATIOANDDEPTH.out.sites,
+        CALLRATIOANDDEPTH.out.depth,
         genome_id,
         'igv'
     )
 
     IGVTOOLS_TOTDF_RATIO(
-        CALLRATIOANDDEPTH.out.sites,
+        CALLRATIOANDDEPTH.out.ratio,
         genome_id,
         'igv'
     )

@@ -24,7 +24,9 @@ process CALLRATIOANDDEPTH {
     //               For Conda, the build (i.e. "h9402c20_2") must be EXCLUDED to support installation on different operating systems.
     // TODO nf-core: See section in main README for further information regarding finding and adding container addresses to the section below.
     conda "${moduleDir}/environment.yml"
-    container "docker.io/zhangzhen0226/fditools:python-3.10_numpy-1.23.5_pandas-2.0.3_scipy-1.10.1--9f90b49692d93a2e"
+    container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
+        'https://depot.galaxyproject.org/singularity/python:3.10.4' :
+        'biocontainers/python:3.10.4' }"
 
     input:
     // TODO nf-core: Where applicable all sample-specific information e.g. "id", "single_end", "read_group"
@@ -34,7 +36,6 @@ process CALLRATIOANDDEPTH {
     // TODO nf-core: Where applicable please provide/convert compressed files as input/output
     //               e.g. "*.fastq.gz" and NOT "*.fastq", "*.bam" and NOT "*.sam" etc.
     tuple val(meta), path(bed)
-    path sizes
 
 
     output:
@@ -62,7 +63,7 @@ process CALLRATIOANDDEPTH {
     // TODO nf-core: Please replace the example samtools command below with your module's command
     // TODO nf-core: Please indent the command appropriately (4 spaces!!) to help with readability ;)
     """
-    cat ${bed} | read_to_converted_site.py ${sizes} | \\
+    cat ${bed} | read_to_converted_site.py | \\
         grep -v NA > ${prefix}_sites.txt
     
     echo -e "Chromosome\\tStart\\tEnd\\tFeature\\tratio" > ${prefix}_ratio.igv

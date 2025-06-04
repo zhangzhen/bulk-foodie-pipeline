@@ -41,6 +41,7 @@ workflow ZHANGZHEN_BULKFOODIEPIPELINE {
         params.sizes,
         params.bismark_index,
         params.genome_id,
+        params.macs2_gsize,
         params.tss
     )
     emit:
