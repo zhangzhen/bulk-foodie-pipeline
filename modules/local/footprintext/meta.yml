@@ -1,0 +1,59 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/modules/meta-schema.json
+name: "footprintext"
+description: "Footprints Detector for detecting footprints from DNase-seq data"
+keywords:
+  - footprints
+  - dnase-seq
+  - genomics
+tools:
+  - "footprintext":
+      description: "Footprints Detector v1.0 for detecting footprints from DNase-seq data"
+      homepage: "None"
+      documentation: "None"
+      tool_dev_url: "None"
+      doi: ""
+      licence: ['GPL v3']
+
+input:
+  - meta:
+      type: map
+      description: |
+        Groovy Map containing sample information
+        e.g. `[ id:'sample1', single_end:false ]`
+  - cutCountsFile:
+      type: file
+      description: DNase tag counts BED file
+      pattern: "*.bed"
+  - mappableFile:
+      type: file
+      description: Unmappable base BED file
+      pattern: "*.bed"
+  - DHSBedFile:
+      type: file
+      description: Intergenic regions BED file
+      pattern: "*.bed"
+  - tag:
+      type: string
+      description: Output tag for generated files
+
+output:
+  - meta:
+      type: map
+      description: |
+        Groovy Map containing sample information
+        e.g. `[ id:'sample1', single_end:false ]`
+  - "*.bed":
+      type: file
+      description: Output footprints BED file
+      pattern: "*.bed"
+  - versions:
+    - "versions.yml":
+        type: file
+        description: File containing software versions
+        pattern: "versions.yml"
+
+authors:
+  - "@zhangzhen"
+maintainers:
+  - "@zhangzhen" 

@@ -20,6 +20,11 @@
             "git_sha": "05954dab2ff481bcb999f24455da29a5828af08d",
             "installed_by": ["modules"]
           },
+          "bedtools/merge": {
+            "branch": "master",
+            "git_sha": "05954dab2ff481bcb999f24455da29a5828af08d",
+            "installed_by": ["modules"]
+          },
           "bismark/align": {
             "branch": "master",
             "git_sha": "81880787133db07d9b4c1febd152c090eb8325dc",
@@ -33,6 +38,16 @@
           "fastqc": {
             "branch": "master",
             "git_sha": "b1966f36ec9de31927b2603d8f499960b2a4c294",
+            "installed_by": ["modules"]
+          },
+          "gawk": {
+            "branch": "master",
+            "git_sha": "05954dab2ff481bcb999f24455da29a5828af08d",
+            "installed_by": ["modules"]
+          },
+          "gnu/sort": {
+            "branch": "master",
+            "git_sha": "05954dab2ff481bcb999f24455da29a5828af08d",
             "installed_by": ["modules"]
           },
           "macs2/callpeak": {
@@ -51,6 +66,11 @@
             "installed_by": ["modules"]
           },
           "samtools/sort": {
+            "branch": "master",
+            "git_sha": "05954dab2ff481bcb999f24455da29a5828af08d",
+            "installed_by": ["modules"]
+          },
+          "tabix/bgziptabix": {
             "branch": "master",
             "git_sha": "05954dab2ff481bcb999f24455da29a5828af08d",
             "installed_by": ["modules"]

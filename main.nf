@@ -37,12 +37,13 @@ workflow ZHANGZHEN_BULKFOODIEPIPELINE {
     //
     BULKFOODIEPIPELINE (
         samplesheet,
-        params.fasta,
-        params.sizes,
-        params.bismark_index,
+        params.genomes[params.genome_id].fasta,
+        params.genomes[params.genome_id].sizes,
+        params.genomes[params.genome_id].bismark_index,
         params.genome_id,
-        params.macs2_gsize,
-        params.tss
+        params.genomes[params.genome_id].macs2_gsize,
+        params.genomes[params.genome_id].tss,
+        params.depth
     )
     emit:
     multiqc_report = BULKFOODIEPIPELINE.out.multiqc_report // channel: /path/to/multiqc_report.html

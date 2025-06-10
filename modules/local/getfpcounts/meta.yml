@@ -1,0 +1,48 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/modules/meta-schema.json
+name: "getfpcounts"
+description: "Get false positive counts from input data"
+keywords:
+  - false positive
+  - counts
+  - genomics
+tools:
+  - "getfpcounts":
+      description: "Tool to calculate false positive counts from input data"
+      homepage: "None"
+      documentation: "None"
+      tool_dev_url: "None"
+      doi: ""
+      licence: ['GPL v3']
+
+input:
+  - meta:
+      type: map
+      description: |
+        Groovy Map containing sample information
+        e.g. `[ id:'sample1', single_end:false ]`
+  - input:
+      type: file
+      description: Input file for false positive count calculation
+      pattern: "*.{bed,txt}"
+
+output:
+  - meta:
+      type: map
+      description: |
+        Groovy Map containing sample information
+        e.g. `[ id:'sample1', single_end:false ]`
+  - "*.bed":
+      type: file
+      description: Output BED file containing false positive counts
+      pattern: "*.bed"
+  - versions:
+    - "versions.yml":
+        type: file
+        description: File containing software versions
+        pattern: "versions.yml"
+
+authors:
+  - "@zhangzhen"
+maintainers:
+  - "@zhangzhen" 

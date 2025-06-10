@@ -1,14 +1,13 @@
 #! /usr/bin/env python
 
 import os, sys
-from collections import OrderedDict
 
 current_chrom = None
 current_data = None
 N = 0
 
 def process_chrom(chrom, data):
-    for pos, (pos_count, neg_count, base) in data.items():
+    for pos, (pos_count, neg_count, base) in sorted(data.items()):
         if pos_count > 0 or neg_count > 0:
             score = pos_count/(pos_count + neg_count)
         else:
@@ -27,7 +26,7 @@ while line:
         if current_chrom is not None:
             process_chrom(current_chrom, current_data)
         current_chrom = ch
-        current_data = OrderedDict()
+        current_data = {}
     
     sites = [int(i) for i in line[4].split(',')]
     scores = [int(i) for i in line[5].split(',')]

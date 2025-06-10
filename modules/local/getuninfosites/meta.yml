@@ -1,0 +1,57 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/modules/meta-schema.json
+name: "getuninfosites"
+description: "Get uninformative sites from input data and DNase data"
+keywords:
+  - uninformative
+  - sites
+  - genomics
+tools:
+  - "getuninfosites":
+      description: "Tool to identify uninformative sites using input data and DNase data"
+      homepage: "None"
+      documentation: "None"
+      tool_dev_url: "None"
+      doi: ""
+      licence: ['GPL v3']
+
+input:
+  - meta:
+      type: map
+      description: |
+        Groovy Map containing sample information
+        e.g. `[ id:'sample1', single_end:false ]`
+  - input:
+      type: file
+      description: Input file for uninformative site calculation
+      pattern: "*.{bed,txt}"
+  - meta2:
+      type: map
+      description: |
+        Groovy Map containing sample information for DNase data
+        e.g. `[ id:'sample1', single_end:false ]`
+  - dnase:
+      type: file
+      description: DNase data file
+      pattern: "*.{bed,txt}"
+
+output:
+  - meta:
+      type: map
+      description: |
+        Groovy Map containing sample information
+        e.g. `[ id:'sample1', single_end:false ]`
+  - "*.bed":
+      type: file
+      description: Output BED file containing uninformative sites
+      pattern: "*.bed"
+  - versions:
+    - "versions.yml":
+        type: file
+        description: File containing software versions
+        pattern: "versions.yml"
+
+authors:
+  - "@zhangzhen"
+maintainers:
+  - "@zhangzhen" 

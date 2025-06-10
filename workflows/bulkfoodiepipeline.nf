@@ -27,6 +27,7 @@ include { MULTIQC                } from '../modules/nf-core/multiqc/main'
 include { paramsSummaryMultiqc   } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_bulkfoodiepipeline_pipeline'
+include { FOOTPRINTING } from '../subworkflows/local/footprinting'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -44,6 +45,7 @@ workflow BULKFOODIEPIPELINE {
     genome_id
     macs2_gsize
     tss
+    depth
 
     main:
 
@@ -149,7 +151,7 @@ workflow BULKFOODIEPIPELINE {
     )
     ch_versions = ch_versions.mix(UCSC_BEDGRAPHTOBIGWIG.out.versions)
 
-    ch_bedpe = BEDTOOLS_GENOMECOV.out.genomecov.map { meta, bedpe -> 
+    ch_bedpe = POSTPROCESSBED.out.frag_bed.map { meta, bedpe -> 
         [meta, bedpe, []] // emptych_sizes list as placeholder
     }
     MACS2_CALLPEAK (
@@ -189,6 +191,8 @@ workflow BULKFOODIEPIPELINE {
         [[:], ch_sizes]
     )
 
+    FOOTPRINTING(CALLRATIOANDDEPTH.out.sites, HIGHSCOREPEAKS.out.bed, depth)
+
     //
     // Collate and save software versions
     //
@@ -199,7 +203,6 @@ workflow BULKFOODIEPIPELINE {
             sort: true,
             newLine: true
         ).set { ch_collated_versions }
-
 
     //
     // MODULE: MultiQC
