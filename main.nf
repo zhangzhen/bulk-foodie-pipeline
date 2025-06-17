@@ -43,7 +43,8 @@ workflow ZHANGZHEN_BULKFOODIEPIPELINE {
         params.genome_id,
         params.genomes[params.genome_id].macs2_gsize,
         params.genomes[params.genome_id].tss,
-        params.depth
+        params.depth,
+        params.scripts_dir
     )
     emit:
     multiqc_report = BULKFOODIEPIPELINE.out.multiqc_report // channel: /path/to/multiqc_report.html

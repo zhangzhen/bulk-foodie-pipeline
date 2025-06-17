@@ -8,11 +8,13 @@
 
 #!/bin/bash
 
-if [ ! $# = 5 ]
+set -e
+
+if [ ! $# = 6 ]
 then
     echo "USAGE:"
-    echo "footprinting_run_all.sh  yeast.dnasI.tagCounts.bed  yeast.unmappableBase.bed  yeast.intergenic.bed  yeast.footprints.bed"
-    exit
+    echo "footprinting_run_all.sh  yeast.dnasI.tagCounts.bed  yeast.unmappableBase.bed  yeast.intergenic.bed  yeast.footprints.bed tag scripts_dir"
+    exit 1
 fi
 
 
@@ -24,8 +26,6 @@ ftprtsFile=$4
 
 ## ****** change parameters as needed ******
 
-# the source directory keeping the scripts
-srcDir=./
 # the directory keeping generated files
 resDir=./
 
@@ -36,7 +36,7 @@ flankSize=75
 
 # tag for files generated
 tag=$5
-
+scripts_dir=$6
 ## ******
 
 
@@ -59,7 +59,7 @@ echo "extracting tag counts ..."
 # each row is a DHS, columns are postions
 if [ ! -f $cutCountsMtx ]
 then
-  python2 $srcDir/footprinting_extract_signal.py \
+  footprinting_extract_signal.py \
       -no-region-ids -no-region-scores \
       -varied-width -none-label NaN \
       $finalDHSBed $cutCountsFile \
@@ -74,7 +74,7 @@ echo "extracting mappability ..."
 # "1" means that the position are mappable.
 if [ ! -f $mappableMtx ]
 then
-  python2 $srcDir/footprinting_extract_signal.py \
+  footprinting_extract_signal.py \
       -no-region-ids -no-region-scores \
       -varied-width -none-label 1 \
       $finalDHSBed $mappableFile \
@@ -104,12 +104,12 @@ isOneSideBkg=0
 
 
 
-cd $srcDir
 echo "detecting footprints..."
+set -x
+octave --eval "pkg load statistics; addpath('$scripts_dir'); footprinting_rank('$cutCountsMtx', '$mappableMtx', $minK, $maxK, $KStep, $isDHS, $localBgrWidth, $flankSize, $maxColNum, 1, $qValueThresh, $transformType, $isOneSideBkg, '$resDir', '$outPrefix');"
+set +x
 
-./run_footprinting_rank.sh /dshare/home/xiec/Research/psw/archive/MATLAB_Runtime_v94 $cutCountsMtx $mappableMtx $minK $maxK $KStep $isDHS $localBgrWidth $flankSize $maxColNum 1 $qValueThresh $transformType $isOneSideBkg $resDir $outPrefix
-
-python2 $srcDir/footprinting_generate_bed.py \
+footprinting_generate_bed.py \
     $resDir/$finalDHSBed $resDir/$outPrefix.qv$qValueThresh \
     > $resDir/$outPrefix.temp.bed
 

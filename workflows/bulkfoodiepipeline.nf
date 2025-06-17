@@ -3,31 +3,31 @@
     IMPORT MODULES / SUBWORKFLOWS / FUNCTIONS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
-include { FASTQC } from '../modules/nf-core/fastqc/main'
-include { TRIMGALORE } from '../modules/nf-core/trimgalore/main'
-include { BISMARK_ALIGN } from '../modules/nf-core/bismark/align/main'
-include { SAMTOOLS_SORT } from '../modules/nf-core/samtools/sort/main'
-include { SAMTOOLS_INDEX } from '../modules/nf-core/samtools/index/main'
-include { BISMARK_DEDUPLICATE } from '../modules/nf-core/bismark/deduplicate/main'
-include { METHYLEXTRACT } from '../modules/local/methylextract/main'
-include { CALLTRACK } from '../modules/local/calltrack/main'
-include { BEDTOOLS_BAMTOBED } from '../modules/nf-core/bedtools/bamtobed/main'
-include { POSTPROCESSBED } from '../modules/local/postprocessbed/main'
-include { BEDTOOLS_GENOMECOV } from '../modules/nf-core/bedtools/genomecov/main'
-include { UCSC_BEDGRAPHTOBIGWIG } from '../modules/nf-core/ucsc/bedgraphtobigwig/main'
-include { MACS2_CALLPEAK } from '../modules/nf-core/macs2/callpeak/main'
-include { CALLRATIOANDDEPTH } from '../modules/local/callratioanddepth/main'
+include { FASTQC                                 } from '../modules/nf-core/fastqc/main'
+include { TRIMGALORE                             } from '../modules/nf-core/trimgalore/main'
+include { BISMARK_ALIGN                          } from '../modules/nf-core/bismark/align/main'
+include { SAMTOOLS_SORT                          } from '../modules/nf-core/samtools/sort/main'
+include { SAMTOOLS_INDEX                         } from '../modules/nf-core/samtools/index/main'
+include { BISMARK_DEDUPLICATE                    } from '../modules/nf-core/bismark/deduplicate/main'
+include { METHYLEXTRACT                          } from '../modules/local/methylextract/main'
+include { CALLTRACK                              } from '../modules/local/calltrack/main'
+include { BEDTOOLS_BAMTOBED                      } from '../modules/nf-core/bedtools/bamtobed/main'
+include { POSTPROCESSBED                         } from '../modules/local/postprocessbed/main'
+include { BEDTOOLS_GENOMECOV                     } from '../modules/nf-core/bedtools/genomecov/main'
+include { UCSC_BEDGRAPHTOBIGWIG                  } from '../modules/nf-core/ucsc/bedgraphtobigwig/main'
+include { MACS2_CALLPEAK                         } from '../modules/nf-core/macs2/callpeak/main'
+include { CALLRATIOANDDEPTH                      } from '../modules/local/callratioanddepth/main'
 include { IGVTOOLS_TOTDF as IGVTOOLS_TOTDF_RATIO } from '../modules/local/igvtools/totdf/main'
 include { IGVTOOLS_TOTDF as IGVTOOLS_TOTDF_DEPTH } from '../modules/local/igvtools/totdf/main'
-include { HIGHSCOREPEAKS } from '../modules/local/highscorepeaks/main'
-include { PLOT } from '../modules/local/plot/main'
-include { BEDTOOLS_INTERSECT } from '../modules/nf-core/bedtools/intersect/main'
-include { PLOTTSS } from '../modules/local/plottss/main'
-include { MULTIQC                } from '../modules/nf-core/multiqc/main'
-include { paramsSummaryMultiqc   } from '../subworkflows/nf-core/utils_nfcore_pipeline'
-include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pipeline'
-include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_bulkfoodiepipeline_pipeline'
-include { FOOTPRINTING } from '../subworkflows/local/footprinting'
+include { HIGHSCOREPEAKS                         } from '../modules/local/highscorepeaks/main'
+include { PLOT                                   } from '../modules/local/plot/main'
+include { BEDTOOLS_INTERSECT                     } from '../modules/nf-core/bedtools/intersect/main'
+include { PLOTTSS                                } from '../modules/local/plottss/main'
+include { MULTIQC                                } from '../modules/nf-core/multiqc/main'
+include { paramsSummaryMultiqc                   } from '../subworkflows/nf-core/utils_nfcore_pipeline'
+include { softwareVersionsToYAML                 } from '../subworkflows/nf-core/utils_nfcore_pipeline'
+include { methodsDescriptionText                 } from '../subworkflows/local/utils_nfcore_bulkfoodiepipeline_pipeline'
+include { FOOTPRINTING                           } from '../subworkflows/local/footprinting'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -36,16 +36,16 @@ include { FOOTPRINTING } from '../subworkflows/local/footprinting'
 */
 
 workflow BULKFOODIEPIPELINE {
-
     take:
-    ch_samplesheet // channel: samplesheet read in from --input
-    ch_fasta // channel: fasta file
-    ch_sizes // channel: sizes file
-    ch_bismark_index   // channel: [ path(bismark index)   ]
+    ch_samplesheet   // channel: samplesheet read in from --input
+    ch_fasta         // channel: fasta file
+    ch_sizes         // channel: sizes file
+    ch_bismark_index // channel: [ path(bismark index)   ]
     genome_id
     macs2_gsize
     tss
     depth
+    scripts_dir
 
     main:
 
@@ -69,7 +69,7 @@ workflow BULKFOODIEPIPELINE {
     //             grouped_chunks[part_num] << chunk
     //         }
     //     }
-        
+
     //     // Return paired chunks as tuples
     //     return grouped_chunks.collect { _part_num, chunks ->
     //         tuple(meta, chunks)
@@ -82,85 +82,87 @@ workflow BULKFOODIEPIPELINE {
     TRIMGALORE(ch_samplesheet)
     ch_versions = ch_versions.mix(TRIMGALORE.out.versions)
 
-    BISMARK_ALIGN (
+    BISMARK_ALIGN(
         TRIMGALORE.out.reads,
         [[:], file(ch_fasta, checkIfExists: true)],
-        [[:], file(ch_bismark_index, checkIfExists: true)]
+        [[:], file(ch_bismark_index, checkIfExists: true)],
     )
-    ch_alignments        = BISMARK_ALIGN.out.bam
-    ch_alignment_reports = BISMARK_ALIGN.out.report.map{ meta, report -> [ meta, report, [] ] }
+    ch_alignments = BISMARK_ALIGN.out.bam
+    ch_alignment_reports = BISMARK_ALIGN.out.report.map { meta, report -> [meta, report, []] }
     ch_versions = ch_versions.mix(BISMARK_ALIGN.out.versions)
 
     /*
     * Run deduplicate_bismark
     */
-    BISMARK_DEDUPLICATE (
+    BISMARK_DEDUPLICATE(
         BISMARK_ALIGN.out.bam
     )
-    ch_alignments        = BISMARK_DEDUPLICATE.out.bam
+    ch_alignments = BISMARK_DEDUPLICATE.out.bam
     ch_alignment_reports = BISMARK_ALIGN.out.report.join(BISMARK_DEDUPLICATE.out.report)
-    ch_versions          = ch_versions.mix(BISMARK_DEDUPLICATE.out.versions)
+    ch_versions = ch_versions.mix(BISMARK_DEDUPLICATE.out.versions)
 
     /*
      * MODULE: Run samtools sort on aligned or deduplicated bam
      */
-    SAMTOOLS_SORT (
+    SAMTOOLS_SORT(
         ch_alignments,
-        [[:],[]] // [ [meta], [fasta]]
+        [[:], []],
     )
     ch_versions = ch_versions.mix(SAMTOOLS_SORT.out.versions)
 
     /*
      * MODULE: Run samtools index on aligned or deduplicated bam
      */
-    SAMTOOLS_INDEX (
+    SAMTOOLS_INDEX(
         SAMTOOLS_SORT.out.bam
     )
     ch_versions = ch_versions.mix(SAMTOOLS_INDEX.out.versions)
 
-    METHYLEXTRACT (
-        SAMTOOLS_SORT.out.bam
+    ch_bam_sorted_bai = SAMTOOLS_SORT.out.bam.join(SAMTOOLS_INDEX.out.bai)
+
+    METHYLEXTRACT(
+        ch_bam_sorted_bai
     )
     ch_versions = ch_versions.mix(METHYLEXTRACT.out.versions)
 
-    CALLTRACK (
+    CALLTRACK(
         METHYLEXTRACT.out.bed
     )
     ch_versions = ch_versions.mix(CALLTRACK.out.versions)
 
-    BEDTOOLS_BAMTOBED (
+    BEDTOOLS_BAMTOBED(
         SAMTOOLS_SORT.out.bam
     )
     ch_versions = ch_versions.mix(BEDTOOLS_BAMTOBED.out.versions)
 
-    POSTPROCESSBED (
+    POSTPROCESSBED(
         BEDTOOLS_BAMTOBED.out.bed
     )
 
-    BEDTOOLS_GENOMECOV (
+    BEDTOOLS_GENOMECOV(
         POSTPROCESSBED.out.frag_bed.combine(Channel.from(1)),
         ch_sizes,
         'bedGraph',
-        false
+        false,
     )
     ch_versions = ch_versions.mix(BEDTOOLS_GENOMECOV.out.versions)
 
-    UCSC_BEDGRAPHTOBIGWIG (
+    UCSC_BEDGRAPHTOBIGWIG(
         BEDTOOLS_GENOMECOV.out.genomecov,
-        ch_sizes
+        ch_sizes,
     )
     ch_versions = ch_versions.mix(UCSC_BEDGRAPHTOBIGWIG.out.versions)
 
-    ch_bedpe = POSTPROCESSBED.out.frag_bed.map { meta, bedpe -> 
-        [meta, bedpe, []] // emptych_sizes list as placeholder
+    ch_bedpe = POSTPROCESSBED.out.frag_bed.map { meta, bedpe ->
+        [meta, bedpe, []]
     }
-    MACS2_CALLPEAK (
-        ch_bedpe, // empty list as placeholder
-        macs2_gsize
+    MACS2_CALLPEAK(
+        ch_bedpe,
+        macs2_gsize,
     )
     ch_versions = ch_versions.mix(MACS2_CALLPEAK.out.versions)
 
-    HIGHSCOREPEAKS (
+    HIGHSCOREPEAKS(
         MACS2_CALLPEAK.out.peak
     )
 
@@ -168,30 +170,30 @@ workflow BULKFOODIEPIPELINE {
         METHYLEXTRACT.out.txt
     )
 
-    CALLRATIOANDDEPTH (
+    CALLRATIOANDDEPTH(
         CALLTRACK.out.summary_score_bed
     )
 
     IGVTOOLS_TOTDF_DEPTH(
         CALLRATIOANDDEPTH.out.depth,
         genome_id,
-        'igv'
+        'igv',
     )
 
     IGVTOOLS_TOTDF_RATIO(
         CALLRATIOANDDEPTH.out.ratio,
         genome_id,
-        'igv'
+        'igv',
     )
 
     BEDTOOLS_INTERSECT(
-        CALLRATIOANDDEPTH.out.sites.map { meta, sites -> 
+        CALLRATIOANDDEPTH.out.sites.map { meta, sites ->
             [meta, sites, file(tss, checkIfExists: true)]
         },
-        [[:], ch_sizes]
+        [[:], ch_sizes],
     )
 
-    FOOTPRINTING(CALLRATIOANDDEPTH.out.sites, HIGHSCOREPEAKS.out.bed, depth)
+    FOOTPRINTING(CALLRATIOANDDEPTH.out.sites, HIGHSCOREPEAKS.out.bed, depth, scripts_dir)
 
     //
     // Collate and save software versions
@@ -199,52 +201,50 @@ workflow BULKFOODIEPIPELINE {
     softwareVersionsToYAML(ch_versions)
         .collectFile(
             storeDir: "${params.outdir}/pipeline_info",
-            name:  'bulkfoodiepipeline_software_'  + 'mqc_'  + 'versions.yml',
+            name: 'bulkfoodiepipeline_software_' + 'mqc_' + 'versions.yml',
             sort: true,
-            newLine: true
-        ).set { ch_collated_versions }
+            newLine: true,
+        )
+        .set { ch_collated_versions }
 
     //
     // MODULE: MultiQC
     //
-    ch_multiqc_config        = Channel.fromPath(
-        "$projectDir/assets/multiqc_config.yml", checkIfExists: true)
-    ch_multiqc_custom_config = params.multiqc_config ?
-        Channel.fromPath(params.multiqc_config, checkIfExists: true) :
-        Channel.empty()
-    ch_multiqc_logo          = params.multiqc_logo ?
-        Channel.fromPath(params.multiqc_logo, checkIfExists: true) :
-        Channel.empty()
-    ch_multiqc_custom_methods_description = params.multiqc_methods_description ?
-        file(params.multiqc_methods_description, checkIfExists: true) :
-        file("$projectDir/assets/methods_description_template.yml", checkIfExists: true)
-    ch_methods_description                = Channel.value(
-        methodsDescriptionText(ch_multiqc_custom_methods_description))
+    ch_multiqc_config = Channel.fromPath(
+        "${projectDir}/assets/multiqc_config.yml",
+        checkIfExists: true
+    )
+    ch_multiqc_custom_config = params.multiqc_config
+        ? Channel.fromPath(params.multiqc_config, checkIfExists: true)
+        : Channel.empty()
+    ch_multiqc_logo = params.multiqc_logo
+        ? Channel.fromPath(params.multiqc_logo, checkIfExists: true)
+        : Channel.empty()
+    ch_multiqc_custom_methods_description = params.multiqc_methods_description
+        ? file(params.multiqc_methods_description, checkIfExists: true)
+        : file("${projectDir}/assets/methods_description_template.yml", checkIfExists: true)
+    ch_methods_description = Channel.value(
+        methodsDescriptionText(ch_multiqc_custom_methods_description)
+    )
 
     ch_multiqc_files = ch_multiqc_files.mix(ch_collated_versions)
     ch_multiqc_files = ch_multiqc_files.mix(
         ch_methods_description.collectFile(
             name: 'methods_description_mqc.yaml',
-            sort: true
+            sort: true,
         )
     )
 
-    MULTIQC (
+    MULTIQC(
         ch_multiqc_files.collect(),
         ch_multiqc_config.toList(),
         ch_multiqc_custom_config.toList(),
         ch_multiqc_logo.toList(),
         [],
-        []
+        [],
     )
 
-    emit:multiqc_report = MULTIQC.out.report.toList() // channel: /path/to/multiqc_report.html
-    versions       = ch_versions                 // channel: [ path(versions.yml) ]
-
+    emit:
+    multiqc_report = MULTIQC.out.report.toList() // channel: /path/to/multiqc_report.html
+    versions       = ch_versions // channel: [ path(versions.yml) ]
 }
-
-/*
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    THE END
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-*/

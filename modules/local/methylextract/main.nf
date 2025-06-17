@@ -17,7 +17,7 @@
 
 process METHYLEXTRACT {
     tag "$meta.id"
-    label 'process_single'
+    label 'process_long'
 
     // TODO nf-core: List required Conda package(s).
     //               Software MUST be pinned to channel (i.e. "bioconda"), version (i.e. "1.10").
@@ -33,7 +33,7 @@ process METHYLEXTRACT {
     //               https://github.com/nf-core/modules/blob/master/modules/nf-core/bwa/index/main.nf
     // TODO nf-core: Where applicable please provide/convert compressed files as input/output
     //               e.g. "*.fastq.gz" and NOT "*.fastq", "*.bam" and NOT "*.sam" etc.
-    tuple val(meta), path(bam)
+    tuple val(meta), path(bam), path(bai)
 
     output:
     // TODO nf-core: Named file extensions MUST be emitted for ALL output channels

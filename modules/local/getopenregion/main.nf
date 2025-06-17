@@ -31,7 +31,7 @@ process GETOPENREGION {
     //               https://github.com/nf-core/modules/blob/master/modules/nf-core/bwa/index/main.nf
     // TODO nf-core: Where applicable please provide/convert compressed files as input/output
     //               e.g. "*.fastq.gz" and NOT "*.fastq", "*.bam" and NOT "*.sam" etc.
-    tuple val(meta), path(bed_gz)
+    tuple val(meta), path(bed_gz), path(tbi)
     tuple val(meta2), path(peak)
 
     output:

@@ -6,6 +6,7 @@ process FOOTPRINTEXT {
 
     input:
     tuple val(meta), path(cut_counts_file), path(mappable_file), path(DHS_bed_file)
+    val scripts_dir
 
     output:
     tuple val(meta), path("*.bed"), emit: bed
@@ -18,13 +19,13 @@ process FOOTPRINTEXT {
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
     """
-    #!/bin/bash
-    bash footprinting_run_all_4321.sh \\
+    footprinting_run_all_4321.sh \\
         $cut_counts_file \\
         $mappable_file \\
         $DHS_bed_file \\
         ${prefix}.bed \\
-        ${meta.id}
+        ${meta.id} \\
+        $scripts_dir
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

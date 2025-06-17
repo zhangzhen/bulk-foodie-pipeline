@@ -4,30 +4,29 @@
 //               https://nf-co.re/join
 // TODO nf-core: A subworkflow SHOULD import at least two modules
 
-include { BEDTOOLS_INTERSECT      } from '../../../modules/nf-core/bedtools/intersect/main'
-include { GAWK as FILTERBYDEPTH } from '../../../modules/nf-core/gawk/main'
-include { TABIX_BGZIPTABIX } from '../../../modules/nf-core/tabix/bgziptabix/main'
-include { GETOPENREGION } from '../../../modules/local/getopenregion/main'
-include { GAWK as SLOPBOTH } from '../../../modules/nf-core/gawk/main'
-include { BEDTOOLS_MERGE } from '../../../modules/nf-core/bedtools/merge/main'
-include { GAWK as DNASENUM } from '../../../modules/nf-core/gawk/main'
-include { BEDTOOLS_INTERSECT as PEAKINTERSECT      } from '../../../modules/nf-core/bedtools/intersect/main'
-include { GNU_CUT } from '../../../modules/local/gnu/cut/main'
-include { GNU_SORT } from '../../../modules/nf-core/gnu/sort/main'
-include { GETFPCOUNTS } from '../../../modules/local/getfpcounts/main'
-include { GETUNINFOSITES } from '../../../modules/local/getuninfosites/main'
-include { FOOTPRINTEXT } from '../../../modules/local/footprintext/main'
-include { GNU_TAIL } from '../../../modules/local/gnu/tail/main'
+include { BEDTOOLS_INTERSECT                   } from '../../../modules/nf-core/bedtools/intersect/main'
+include { GAWK as FILTERBYDEPTH                } from '../../../modules/nf-core/gawk/main'
+include { TABIX_BGZIPTABIX                     } from '../../../modules/nf-core/tabix/bgziptabix/main'
+include { GETOPENREGION                        } from '../../../modules/local/getopenregion/main'
+include { GAWK as SLOPBOTH                     } from '../../../modules/nf-core/gawk/main'
+include { BEDTOOLS_MERGE                       } from '../../../modules/nf-core/bedtools/merge/main'
+include { GAWK as DNASENUM                     } from '../../../modules/nf-core/gawk/main'
+include { BEDTOOLS_INTERSECT as PEAKINTERSECT  } from '../../../modules/nf-core/bedtools/intersect/main'
+include { GNU_CUT                              } from '../../../modules/local/gnu/cut/main'
+include { GNU_SORT                             } from '../../../modules/nf-core/gnu/sort/main'
+include { GETFPCOUNTS                          } from '../../../modules/local/getfpcounts/main'
+include { GETUNINFOSITES                       } from '../../../modules/local/getuninfosites/main'
+include { FOOTPRINTEXT                         } from '../../../modules/local/footprintext/main'
+include { GNU_TAIL                             } from '../../../modules/local/gnu/tail/main'
 include { BEDTOOLS_INTERSECT as FINALINTERSECT } from '../../../modules/nf-core/bedtools/intersect/main'
-include { GAWK as FILTERP } from '../../../modules/nf-core/gawk/main'
+include { GAWK as FILTERP                      } from '../../../modules/nf-core/gawk/main'
 
 workflow FOOTPRINTING {
-
     take:
-    // TODO nf-core: edit input (take) channels
     ch_site // channel: [ val(meta), [ site ] ]
     ch_peak // channel: [ val(meta), [ peak ] ]
-    depth // integer
+    depth   // integer
+    scripts_dir
 
     main:
 
@@ -37,19 +36,15 @@ workflow FOOTPRINTING {
 
     BEDTOOLS_INTERSECT(ch_site.join(ch_peak), [[:], []])
     ch_versions = ch_versions.mix(BEDTOOLS_INTERSECT.out.versions.first())
-    
-    ch_bed = BEDTOOLS_INTERSECT.out.intersect
-        .map { meta, bed -> [ meta + ['depth': depth], bed ]}
+
+    ch_bed = BEDTOOLS_INTERSECT.out.intersect.map { meta, bed -> [meta + ['depth': depth], bed] }
 
     FILTERBYDEPTH(ch_bed, [], false)
 
     TABIX_BGZIPTABIX(FILTERBYDEPTH.out.output)
     ch_versions = ch_versions.mix(TABIX_BGZIPTABIX.out.versions.first())
 
-    ch_bed_gz = TABIX_BGZIPTABIX.out.gz_tbi
-        .map { meta, gz, _tbi -> [ meta, gz ] }
-
-    GETOPENREGION(ch_bed_gz, ch_peak)
+    GETOPENREGION(TABIX_BGZIPTABIX.out.gz_tbi, ch_peak)
 
     ch_openreg = GETOPENREGION.out.bed
 
@@ -60,7 +55,7 @@ workflow FOOTPRINTING {
 
     DNASENUM(BEDTOOLS_MERGE.out.bed, [], false)
 
-    PEAKINTERSECT(ch_openreg.join(DNASENUM.out.output), [[:], []])
+    PEAKINTERSECT(FILTERBYDEPTH.out.output.join(DNASENUM.out.output), [[:], []])
     ch_versions = ch_versions.mix(PEAKINTERSECT.out.versions.first())
 
     GNU_CUT(PEAKINTERSECT.out.intersect)
@@ -75,7 +70,7 @@ workflow FOOTPRINTING {
     ch_versions = ch_versions.mix(GETUNINFOSITES.out.versions.first())
 
     ch_ftp_inputs = GETFPCOUNTS.out.bed.join(GETUNINFOSITES.out.bed).join(DNASENUM.out.output)
-    FOOTPRINTEXT(ch_ftp_inputs)
+    FOOTPRINTEXT(ch_ftp_inputs, scripts_dir)
     ch_versions = ch_versions.mix(FOOTPRINTEXT.out.versions.first())
 
     GNU_TAIL(FOOTPRINTEXT.out.bed)
@@ -87,7 +82,6 @@ workflow FOOTPRINTING {
     ch_versions = ch_versions.mix(FILTERP.out.versions.first())
 
     emit:
-    // TODO nf-core: edit emitted channels
-    ftprts = FILTERP.out.output           // channel: [ val(meta), [ bed ] ]
-    versions = ch_versions                    // channel: [ versions.yml ]
+    ftprts   = FILTERP.out.output // channel: [ val(meta), [ bed ] ]
+    versions = ch_versions // channel: [ versions.yml ]
 }
