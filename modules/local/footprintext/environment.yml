@@ -4,5 +4,5 @@ channels:
   - conda-forge
   - bioconda
 dependencies:
-  - conda-forge::octave=9.4.0
+  - zhangzhen-cpl::octave-statistics=1.7.4
   - conda-forge::python=3.10

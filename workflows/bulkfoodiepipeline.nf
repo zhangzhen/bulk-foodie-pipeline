@@ -11,6 +11,7 @@ include { SAMTOOLS_INDEX                         } from '../modules/nf-core/samt
 include { BISMARK_DEDUPLICATE                    } from '../modules/nf-core/bismark/deduplicate/main'
 include { METHYLEXTRACT                          } from '../modules/local/methylextract/main'
 include { CALLTRACK                              } from '../modules/local/calltrack/main'
+include { SAMTOOLS_SORT as SAMTOOLS_SORTBYNAME   } from '../modules/nf-core/samtools/sort/main'
 include { BEDTOOLS_BAMTOBED                      } from '../modules/nf-core/bedtools/bamtobed/main'
 include { POSTPROCESSBED                         } from '../modules/local/postprocessbed/main'
 include { BEDTOOLS_GENOMECOV                     } from '../modules/nf-core/bedtools/genomecov/main'
@@ -130,8 +131,13 @@ workflow BULKFOODIEPIPELINE {
     )
     ch_versions = ch_versions.mix(CALLTRACK.out.versions)
 
+    SAMTOOLS_SORTBYNAME(
+        ch_alignments,
+        [[:], []],
+    )
+
     BEDTOOLS_BAMTOBED(
-        SAMTOOLS_SORT.out.bam
+        SAMTOOLS_SORTBYNAME.out.bam
     )
     ch_versions = ch_versions.mix(BEDTOOLS_BAMTOBED.out.versions)
 
