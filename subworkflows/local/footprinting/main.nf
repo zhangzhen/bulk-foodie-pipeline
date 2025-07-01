@@ -4,37 +4,50 @@
 //               https://nf-co.re/join
 // TODO nf-core: A subworkflow SHOULD import at least two modules
 
-include { BEDTOOLS_INTERSECT                   } from '../../../modules/nf-core/bedtools/intersect/main'
-include { GAWK as FILTERBYDEPTH                } from '../../../modules/nf-core/gawk/main'
-include { TABIX_BGZIPTABIX                     } from '../../../modules/nf-core/tabix/bgziptabix/main'
-include { GETOPENREGION                        } from '../../../modules/local/getopenregion/main'
-include { GAWK as SLOPBOTH                     } from '../../../modules/nf-core/gawk/main'
-include { BEDTOOLS_MERGE                       } from '../../../modules/nf-core/bedtools/merge/main'
-include { GAWK as DNASENUM                     } from '../../../modules/nf-core/gawk/main'
-include { BEDTOOLS_INTERSECT as PEAKINTERSECT  } from '../../../modules/nf-core/bedtools/intersect/main'
-include { GNU_CUT                              } from '../../../modules/local/gnu/cut/main'
-include { GNU_SORT                             } from '../../../modules/nf-core/gnu/sort/main'
-include { GETFPCOUNTS                          } from '../../../modules/local/getfpcounts/main'
-include { GETUNINFOSITES                       } from '../../../modules/local/getuninfosites/main'
-include { FOOTPRINTEXT                         } from '../../../modules/local/footprintext/main'
-include { GNU_TAIL                             } from '../../../modules/local/gnu/tail/main'
+include { ADJUSTRATIO } from '../../../modules/local/adjustratio/main'
+include { GAWK as REFORMATRATIOADJUST } from '../../../modules/nf-core/gawk/main'
+include { BEDTOOLS_INTERSECT } from '../../../modules/nf-core/bedtools/intersect/main'
+include { GAWK as FILTERBYDEPTH } from '../../../modules/nf-core/gawk/main'
+include { TABIX_BGZIPTABIX } from '../../../modules/nf-core/tabix/bgziptabix/main'
+include { GETOPENREGION } from '../../../modules/local/getopenregion/main'
+include { GAWK as SLOPBOTH } from '../../../modules/nf-core/gawk/main'
+include { BEDTOOLS_MERGE } from '../../../modules/nf-core/bedtools/merge/main'
+include { GAWK as DNASENUM } from '../../../modules/nf-core/gawk/main'
+include { BEDTOOLS_INTERSECT as PEAKINTERSECT } from '../../../modules/nf-core/bedtools/intersect/main'
+include { GNU_CUT } from '../../../modules/local/gnu/cut/main'
+include { GNU_SORT } from '../../../modules/nf-core/gnu/sort/main'
+include { GETFPCOUNTS } from '../../../modules/local/getfpcounts/main'
+include { GETUNINFOSITES } from '../../../modules/local/getuninfosites/main'
+include { FOOTPRINTEXT } from '../../../modules/local/footprintext/main'
+include { GNU_TAIL } from '../../../modules/local/gnu/tail/main'
 include { BEDTOOLS_INTERSECT as FINALINTERSECT } from '../../../modules/nf-core/bedtools/intersect/main'
-include { GAWK as FILTERP                      } from '../../../modules/nf-core/gawk/main'
+include { GAWK as FILTERP } from '../../../modules/nf-core/gawk/main'
 
 workflow FOOTPRINTING {
     take:
-    ch_site // channel: [ val(meta), [ site ] ]
+    sites // channel: [ val(meta), [ site ] ]
     ch_peak // channel: [ val(meta), [ peak ] ]
-    depth   // integer
+    depth // integer
     scripts_dir
+    expected_ratio_file
+    genome_fasta
 
     main:
 
+    ch_sites = Channel.empty()
     ch_versions = Channel.empty()
 
     // TODO nf-core: substitute modules here for the modules of your subworkflow
 
-    BEDTOOLS_INTERSECT(ch_site.join(ch_peak), [[:], []])
+    if (expected_ratio_file) {
+        ADJUSTRATIO(sites, expected_ratio_file, genome_fasta)
+        REFORMATRATIOADJUST(ADJUSTRATIO.out.txt, [], false)
+        ch_sites = REFORMATRATIOADJUST.out.output
+    }
+    else {
+        ch_sites = sites
+    }
+    BEDTOOLS_INTERSECT(ch_sites.join(ch_peak), [[:], []])
     ch_versions = ch_versions.mix(BEDTOOLS_INTERSECT.out.versions.first())
 
     ch_bed = BEDTOOLS_INTERSECT.out.intersect.map { meta, bed -> [meta + ['depth': depth], bed] }
@@ -82,6 +95,6 @@ workflow FOOTPRINTING {
     ch_versions = ch_versions.mix(FILTERP.out.versions.first())
 
     emit:
-    ftprts   = FILTERP.out.output // channel: [ val(meta), [ bed ] ]
+    ftprts = FILTERP.out.output // channel: [ val(meta), [ bed ] ]
     versions = ch_versions // channel: [ versions.yml ]
 }

@@ -38,15 +38,16 @@ include { FOOTPRINTING                           } from '../subworkflows/local/f
 
 workflow BULKFOODIEPIPELINE {
     take:
-    ch_samplesheet   // channel: samplesheet read in from --input
-    ch_fasta         // channel: fasta file
-    ch_sizes         // channel: sizes file
-    ch_bismark_index // channel: [ path(bismark index)   ]
+    ch_samplesheet      // channel: samplesheet read in from --input
+    ch_fasta            // channel: fasta file
+    ch_sizes            // channel: sizes file
+    ch_bismark_index    // channel: [ path(bismark index)   ]
     genome_id
     macs2_gsize
     tss
     depth
     scripts_dir
+    expected_ratio_file
 
     main:
 
@@ -199,7 +200,14 @@ workflow BULKFOODIEPIPELINE {
         [[:], ch_sizes],
     )
 
-    FOOTPRINTING(CALLRATIOANDDEPTH.out.sites, HIGHSCOREPEAKS.out.bed, depth, scripts_dir)
+    FOOTPRINTING(
+        CALLRATIOANDDEPTH.out.sites,
+        HIGHSCOREPEAKS.out.bed,
+        depth,
+        scripts_dir,
+        expected_ratio_file,
+        ch_fasta,
+    )
 
     //
     // Collate and save software versions

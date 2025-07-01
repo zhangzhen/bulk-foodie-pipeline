@@ -1,6 +1,6 @@
 process FOOTPRINTEXT {
     tag "$meta.id"
-    label 'process_single'
+    label 'process_long'
 
     conda "${moduleDir}/environment.yml"
 

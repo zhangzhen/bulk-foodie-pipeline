@@ -13,7 +13,7 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
-include { BULKFOODIEPIPELINE  } from './workflows/bulkfoodiepipeline'
+include { BULKFOODIEPIPELINE      } from './workflows/bulkfoodiepipeline'
 include { PIPELINE_INITIALISATION } from './subworkflows/local/utils_nfcore_bulkfoodiepipeline_pipeline'
 include { PIPELINE_COMPLETION     } from './subworkflows/local/utils_nfcore_bulkfoodiepipeline_pipeline'
 /*
@@ -26,7 +26,6 @@ include { PIPELINE_COMPLETION     } from './subworkflows/local/utils_nfcore_bulk
 // WORKFLOW: Run main analysis pipeline depending on type of input
 //
 workflow ZHANGZHEN_BULKFOODIEPIPELINE {
-
     take:
     samplesheet // channel: samplesheet read in from --input
 
@@ -35,7 +34,7 @@ workflow ZHANGZHEN_BULKFOODIEPIPELINE {
     //
     // WORKFLOW: Run pipeline
     //
-    BULKFOODIEPIPELINE (
+    BULKFOODIEPIPELINE(
         samplesheet,
         params.genomes[params.genome_id].fasta,
         params.genomes[params.genome_id].sizes,
@@ -44,8 +43,10 @@ workflow ZHANGZHEN_BULKFOODIEPIPELINE {
         params.genomes[params.genome_id].macs2_gsize,
         params.genomes[params.genome_id].tss,
         params.depth,
-        params.scripts_dir
+        params.scripts_dir,
+        params.expected_ratio_file,
     )
+
     emit:
     multiqc_report = BULKFOODIEPIPELINE.out.multiqc_report // channel: /path/to/multiqc_report.html
 }
@@ -56,38 +57,30 @@ workflow ZHANGZHEN_BULKFOODIEPIPELINE {
 */
 
 workflow {
-
-    main:
     //
     // SUBWORKFLOW: Run initialisation tasks
     //
-    PIPELINE_INITIALISATION (
+    PIPELINE_INITIALISATION(
         params.version,
         params.validate_params,
         params.monochrome_logs,
         args,
         params.outdir,
-        params.input
+        params.input,
     )
 
     //
     // WORKFLOW: Run main workflow/dshare/home/xiec/Research/prj/brain/rsl/5409/TSS_HK/ENCFF493CCB_HK_1k.bed
     //
-    ZHANGZHEN_BULKFOODIEPIPELINE (
+    ZHANGZHEN_BULKFOODIEPIPELINE(
         PIPELINE_INITIALISATION.out.samplesheet
     )
     //
     // SUBWORKFLOW: Run completion tasks
     //
-    PIPELINE_COMPLETION (
+    PIPELINE_COMPLETION(
         params.outdir,
         params.monochrome_logs,
-        ZHANGZHEN_BULKFOODIEPIPELINE.out.multiqc_report
+        ZHANGZHEN_BULKFOODIEPIPELINE.out.multiqc_report,
     )
 }
-
-/*
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    THE END
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-*/
