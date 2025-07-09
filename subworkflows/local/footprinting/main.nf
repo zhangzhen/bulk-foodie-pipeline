@@ -4,30 +4,30 @@
 //               https://nf-co.re/join
 // TODO nf-core: A subworkflow SHOULD import at least two modules
 
-include { ADJUSTRATIO } from '../../../modules/local/adjustratio/main'
-include { GAWK as REFORMATRATIOADJUST } from '../../../modules/nf-core/gawk/main'
-include { BEDTOOLS_INTERSECT } from '../../../modules/nf-core/bedtools/intersect/main'
-include { GAWK as FILTERBYDEPTH } from '../../../modules/nf-core/gawk/main'
-include { TABIX_BGZIPTABIX } from '../../../modules/nf-core/tabix/bgziptabix/main'
-include { GETOPENREGION } from '../../../modules/local/getopenregion/main'
-include { GAWK as SLOPBOTH } from '../../../modules/nf-core/gawk/main'
-include { BEDTOOLS_MERGE } from '../../../modules/nf-core/bedtools/merge/main'
-include { GAWK as DNASENUM } from '../../../modules/nf-core/gawk/main'
-include { BEDTOOLS_INTERSECT as PEAKINTERSECT } from '../../../modules/nf-core/bedtools/intersect/main'
-include { GNU_CUT } from '../../../modules/local/gnu/cut/main'
-include { GNU_SORT } from '../../../modules/nf-core/gnu/sort/main'
-include { GETFPCOUNTS } from '../../../modules/local/getfpcounts/main'
-include { GETUNINFOSITES } from '../../../modules/local/getuninfosites/main'
-include { FOOTPRINTEXT } from '../../../modules/local/footprintext/main'
-include { GNU_TAIL } from '../../../modules/local/gnu/tail/main'
+include { ADJUSTRATIO                          } from '../../../modules/local/adjustratio/main'
+include { GAWK as REFORMATRATIOADJUST          } from '../../../modules/nf-core/gawk/main'
+include { BEDTOOLS_INTERSECT                   } from '../../../modules/nf-core/bedtools/intersect/main'
+include { GAWK as FILTERBYDEPTH                } from '../../../modules/nf-core/gawk/main'
+include { TABIX_BGZIPTABIX                     } from '../../../modules/nf-core/tabix/bgziptabix/main'
+include { GETOPENREGION                        } from '../../../modules/local/getopenregion/main'
+include { GAWK as SLOPBOTH                     } from '../../../modules/nf-core/gawk/main'
+include { BEDTOOLS_MERGE                       } from '../../../modules/nf-core/bedtools/merge/main'
+include { GAWK as DNASENUM                     } from '../../../modules/nf-core/gawk/main'
+include { BEDTOOLS_INTERSECT as PEAKINTERSECT  } from '../../../modules/nf-core/bedtools/intersect/main'
+include { GNU_CUT                              } from '../../../modules/local/gnu/cut/main'
+include { GNU_SORT                             } from '../../../modules/nf-core/gnu/sort/main'
+include { GETFPCOUNTS                          } from '../../../modules/local/getfpcounts/main'
+include { GETUNINFOSITES                       } from '../../../modules/local/getuninfosites/main'
+include { FOOTPRINTEXT                         } from '../../../modules/local/footprintext/main'
+include { GNU_TAIL                             } from '../../../modules/local/gnu/tail/main'
 include { BEDTOOLS_INTERSECT as FINALINTERSECT } from '../../../modules/nf-core/bedtools/intersect/main'
-include { GAWK as FILTERP } from '../../../modules/nf-core/gawk/main'
+include { GAWK as FILTERP                      } from '../../../modules/nf-core/gawk/main'
 
 workflow FOOTPRINTING {
     take:
-    sites // channel: [ val(meta), [ site ] ]
-    ch_peak // channel: [ val(meta), [ peak ] ]
-    depth // integer
+    sites               // channel: [ val(meta), [ site ] ]
+    ch_peak             // channel: [ val(meta), [ peak ] ]
+    depth               // integer
     scripts_dir
     expected_ratio_file
     genome_fasta
@@ -95,6 +95,6 @@ workflow FOOTPRINTING {
     ch_versions = ch_versions.mix(FILTERP.out.versions.first())
 
     emit:
-    ftprts = FILTERP.out.output // channel: [ val(meta), [ bed ] ]
+    ftprts   = FILTERP.out.output // channel: [ val(meta), [ bed ] ]
     versions = ch_versions // channel: [ versions.yml ]
 }
