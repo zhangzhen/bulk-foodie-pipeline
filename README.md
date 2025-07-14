@@ -2,7 +2,7 @@
 
 ## Introduction
 
-**zhangzhen/bulkfoodiepipeline** is a bioinformatics pipeline that ...
+**zhangzhen/bulkfoodiepipeline** is a bioinformatics pipeline used for in-vivo bulk FOODIE sequencing data. It pre-processes raw data from FastQ inputs, aligns the reads, computes conversion rates of cytosines, and calls footprints of transcription factors.
 
 <!-- TODO nf-core:
    Complete this sentence with a 2-3 sentence summary of what types of data the pipeline ingests, a brief overview of the
@@ -28,7 +28,8 @@ First, prepare a samplesheet with your input data that looks as follows:
 
 ```csv
 sample,fastq_1,fastq_2
-CONTROL_REP1,AEG588A1_S1_L002_R1_001.fastq.gz,AEG588A1_S1_L002_R2_001.fastq.gz
+sample,fastq_1,fastq_2
+b250417-MB-Tn5nwz-B2462-06-2h-CS3,b250417-MB-Tn5nwz-B2462-06-2h-CS3_L3_Q0060W0149.R1.fastq.gz,b250417-MB-Tn5nwz-B2462-06-2h-CS3_L3_Q0060W0149.R2.fastq.gz
 ```
 
 Each row represents a fastq file (single-end) or a pair of fastq files (paired end).
@@ -41,8 +42,10 @@ Now, you can run the pipeline using:
 
 ```bash
 nextflow run zhangzhen/bulkfoodiepipeline \
-   -profile <docker/singularity/.../institute> \
+   -profile conda \
    --input samplesheet.csv \
+   --depth <NUM> \
+   --expected_ratio_file <EXPECTED_RATIO_FILE> \
    --outdir <OUTDIR>
 ```
 
@@ -54,6 +57,7 @@ nextflow run zhangzhen/bulkfoodiepipeline \
 zhangzhen/bulkfoodiepipeline was originally written by Zhang Zhen, Shen Ke, Wang Quangui.
 
 We thank the following people for their extensive assistance in the development of this pipeline:
+- group members at Sunney Xie Lab
 
 <!-- TODO nf-core: If applicable, make list of people who have also contributed -->
 
@@ -62,6 +66,10 @@ We thank the following people for their extensive assistance in the development 
 If you would like to contribute to this pipeline, please see the [contributing guidelines](.github/CONTRIBUTING.md).
 
 ## Citations
+
+If you use `bulk-foodie-pipeline` for your analysis, please cite the `FOODIE` article as follows:
+
+> R. He, W. Dong, Z. Wang, C. Xie, L. Gao, W. Ma, K. Shen, D. Li, Y. Pang, F. Jian, J. Zhang, Y. Yuan, X. Wang, Z. Zhang, Y. Zheng, S. Liu, C. Luo, X. Chai, J. Ren, Z. Zhu, & X.S. Xie, **Genome-wide single-cell and single-molecule footprinting of transcription factors with deaminase**, _Proc. Natl. Acad. Sci. U.S.A._ 121 (52) e2423270121, [doi: 10.1073/pnas.2423270121](https://doi.org/10.1073/pnas.2423270121) (2024).
 
 <!-- TODO nf-core: Add citation for pipeline after first release. Uncomment lines below and update Zenodo doi and badge at the top of this file. -->
 <!-- If you use zhangzhen/bulkfoodiepipeline for your analysis, please cite it using the following doi: [10.5281/zenodo.XXXXXX](https://doi.org/10.5281/zenodo.XXXXXX) -->
