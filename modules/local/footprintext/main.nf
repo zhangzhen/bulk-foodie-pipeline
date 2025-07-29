@@ -3,6 +3,7 @@ process FOOTPRINTEXT {
     label 'process_long'
 
     conda "${moduleDir}/environment.yml"
+    container "docker.io/zhangzhen0226/fditools:octave-statistics-1.7.4_python-3.10--85e0f7af76bf3b64"
 
     input:
     tuple val(meta), path(cut_counts_file), path(mappable_file), path(DHS_bed_file)
