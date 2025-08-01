@@ -1,51 +1,4 @@
-repository_type: pipeline
-
-nf_core_version: 3.2.1
-
 lint:
-  files_unchanged:
-    - .github/ISSUE_TEMPLATE/bug_report.yml
-    - .github/ISSUE_TEMPLATE/config.yml
-    - .github/ISSUE_TEMPLATE/feature_request.yml
-    - .github/PULL_REQUEST_TEMPLATE.md
-    - .github/workflows/branch.yml
-    - .github/workflows/linting_comment.yml
-    - .github/workflows/linting.yml
-    - .github/CONTRIBUTING.md
-    - .github/.dockstore.yml
-    - .github/CONTRIBUTING.md
-    - LICENSE
-    - .prettierignore
-    - .prettierignore
-    - .prettierignore
-    - .prettierignore
-    - .github/ISSUE_TEMPLATE/bug_report.yml
-    - .github/ISSUE_TEMPLATE/config.yml
-    - .github/ISSUE_TEMPLATE/feature_request.yml
-    - .github/PULL_REQUEST_TEMPLATE.md
-    - .github/workflows/branch.yml
-    - .github/workflows/linting_comment.yml
-    - .github/workflows/linting.yml
-    - .github/CONTRIBUTING.md
-    - .github/.dockstore.yml
-    - .github/CONTRIBUTING.md
-    - LICENSE
-    - .prettierignore
-    - .prettierignore
-    - .prettierignore
-    - .prettierignore
-    - CODE_OF_CONDUCT.md
-    - assets/nf-core-bulkfoodiepipeline_logo_light.png
-    - docs/images/nf-core-bulkfoodiepipeline_logo_light.png
-    - docs/images/nf-core-bulkfoodiepipeline_logo_dark.png
-    - .github/ISSUE_TEMPLATE/bug_report.yml
-    - .github/CONTRIBUTING.md
-    - .github/PULL_REQUEST_TEMPLATE.md
-    - assets/email_template.txt
-    - docs/README.md
-  nextflow_config: false
-  multiqc_config:
-    - report_comment
   files_exist:
     - .github/ISSUE_TEMPLATE/bug_report.yml
     - .github/ISSUE_TEMPLATE/feature_request.yml
@@ -94,21 +47,65 @@ lint:
     - .github/ISSUE_TEMPLATE/config.yml
     - .github/workflows/awstest.yml
     - .github/workflows/awsfulltest.yml
+  files_unchanged:
+    - .github/ISSUE_TEMPLATE/bug_report.yml
+    - .github/ISSUE_TEMPLATE/config.yml
+    - .github/ISSUE_TEMPLATE/feature_request.yml
+    - .github/PULL_REQUEST_TEMPLATE.md
+    - .github/workflows/branch.yml
+    - .github/workflows/linting_comment.yml
+    - .github/workflows/linting.yml
+    - .github/CONTRIBUTING.md
+    - .github/.dockstore.yml
+    - .github/CONTRIBUTING.md
+    - LICENSE
+    - .prettierignore
+    - .prettierignore
+    - .prettierignore
+    - .prettierignore
+    - .github/ISSUE_TEMPLATE/bug_report.yml
+    - .github/ISSUE_TEMPLATE/config.yml
+    - .github/ISSUE_TEMPLATE/feature_request.yml
+    - .github/PULL_REQUEST_TEMPLATE.md
+    - .github/workflows/branch.yml
+    - .github/workflows/linting_comment.yml
+    - .github/workflows/linting.yml
+    - .github/CONTRIBUTING.md
+    - .github/.dockstore.yml
+    - .github/CONTRIBUTING.md
+    - LICENSE
+    - .prettierignore
+    - .prettierignore
+    - .prettierignore
+    - .prettierignore
+    - CODE_OF_CONDUCT.md
+    - assets/nf-core-bulkfoodiepipeline_logo_light.png
+    - docs/images/nf-core-bulkfoodiepipeline_logo_light.png
+    - docs/images/nf-core-bulkfoodiepipeline_logo_dark.png
+    - .github/ISSUE_TEMPLATE/bug_report.yml
+    - .github/CONTRIBUTING.md
+    - .github/PULL_REQUEST_TEMPLATE.md
+    - assets/email_template.txt
+    - docs/README.md
+  multiqc_config:
+    - report_comment
+  nextflow_config: false
   readme:
     - nextflow_badge
     - nextflow_badge
     - nextflow_badge
+  schema_description: false
   schema_lint: false
   schema_params: false
-  schema_description: false
-
+nf_core_version: 3.3.1
+repository_type: pipeline
 template:
-  org: zhangzhen
-  name: bulkfoodiepipeline
-  description: This pipeline analyses data from bulk the FOODIE technique
   author: Zhang Zhen, Shen Ke, Wang Quangui
-  version: 1.0.0dev
-  force: true
+  description: This pipeline analyses data from bulk the FOODIE technique
+  force: false
+  is_nfcore: false
+  name: bulkfoodiepipeline
+  org: zhangzhen
   outdir: .
   skip_features:
     - github
@@ -128,4 +125,4 @@ template:
     - seqera_platform
     - rocrate
     - vscode
-  is_nfcore: false
+  version: 1.0.0dev
