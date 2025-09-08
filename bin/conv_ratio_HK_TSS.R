@@ -17,7 +17,7 @@ pdf(paste0(sample, '_conv_ratio_HK_TSS.pdf'), width = 7, height = 7)
 
 # Read data from file or stdin
 if (file_path == "-") {
-    TSS.HK <- fread(file("stdin"), col.names = c('Conv', 'Unconv', 'Rel_pos'))
+    TSS.HK <- fread("file:///dev/stdin", col.names = c('Conv', 'Unconv', 'Rel_pos'))
 } else {
     TSS.HK <- fread(file_path, col.names = c('Conv', 'Unconv', 'Rel_pos'))
 }

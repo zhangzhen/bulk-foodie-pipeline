@@ -5,8 +5,7 @@ process GETUNINFOSITES {
     conda "${moduleDir}/environment.yml"
 
     input:
-    tuple val(meta), path(input)
-    tuple val(meta2), path(dnase)
+    tuple val(meta), path(input), path(dnase)
 
     output:
     tuple val(meta), path("*.bed"), emit: bed

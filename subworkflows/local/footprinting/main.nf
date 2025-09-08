@@ -4,8 +4,6 @@
 //               https://nf-co.re/join
 // TODO nf-core: A subworkflow SHOULD import at least two modules
 
-include { ADJUSTRATIO                          } from '../../../modules/local/adjustratio/main'
-include { GAWK as REFORMATRATIOADJUST          } from '../../../modules/nf-core/gawk/main'
 include { BEDTOOLS_INTERSECT                   } from '../../../modules/nf-core/bedtools/intersect/main'
 include { GAWK as FILTERBYDEPTH                } from '../../../modules/nf-core/gawk/main'
 include { TABIX_BGZIPTABIX                     } from '../../../modules/nf-core/tabix/bgziptabix/main'
@@ -25,28 +23,17 @@ include { GAWK as FILTERP                      } from '../../../modules/nf-core/
 
 workflow FOOTPRINTING {
     take:
-    sites               // channel: [ val(meta), [ site ] ]
+    ch_sites               // channel: [ val(meta), [ site ] ]
     ch_peak             // channel: [ val(meta), [ peak ] ]
     depth               // integer
     scripts_dir
-    expected_ratio_file
-    genome_fasta
 
     main:
 
-    ch_sites = Channel.empty()
     ch_versions = Channel.empty()
 
     // TODO nf-core: substitute modules here for the modules of your subworkflow
 
-    if (expected_ratio_file) {
-        ADJUSTRATIO(sites, expected_ratio_file, genome_fasta)
-        REFORMATRATIOADJUST(ADJUSTRATIO.out.txt, [], false)
-        ch_sites = REFORMATRATIOADJUST.out.output
-    }
-    else {
-        ch_sites = sites
-    }
     BEDTOOLS_INTERSECT(ch_sites.join(ch_peak), [[:], []])
     ch_versions = ch_versions.mix(BEDTOOLS_INTERSECT.out.versions.first())
 
@@ -57,7 +44,11 @@ workflow FOOTPRINTING {
     TABIX_BGZIPTABIX(FILTERBYDEPTH.out.output)
     ch_versions = ch_versions.mix(TABIX_BGZIPTABIX.out.versions.first())
 
-    GETOPENREGION(TABIX_BGZIPTABIX.out.gz_tbi, ch_peak)
+    ch_aligned_inputs = TABIX_BGZIPTABIX.out.gz_tbi.join(ch_peak.map { meta, bed -> [meta + ['depth': depth], bed] })
+    GETOPENREGION(
+        ch_aligned_inputs.map { meta, gz, tbi, _bed -> [meta, gz, tbi] },
+        ch_aligned_inputs.map { meta, _gz, _tbi, bed -> [meta, bed] }
+    )
 
     ch_openreg = GETOPENREGION.out.bed
 
@@ -79,7 +70,7 @@ workflow FOOTPRINTING {
     GETFPCOUNTS(GNU_SORT.out.sorted)
     ch_versions = ch_versions.mix(GETFPCOUNTS.out.versions.first())
 
-    GETUNINFOSITES(GNU_SORT.out.sorted, DNASENUM.out.output)
+    GETUNINFOSITES(GNU_SORT.out.sorted.join(DNASENUM.out.output))
     ch_versions = ch_versions.mix(GETUNINFOSITES.out.versions.first())
 
     ch_ftp_inputs = GETFPCOUNTS.out.bed.join(GETUNINFOSITES.out.bed).join(DNASENUM.out.output)
