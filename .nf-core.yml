@@ -125,4 +125,4 @@ template:
   - seqera_platform
   - rocrate
   - vscode
-  version: 1.0.0
+  version: 1.1.0
