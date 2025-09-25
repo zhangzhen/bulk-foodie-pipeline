@@ -22,13 +22,18 @@ include { IGVTOOLS_TOTDF as IGVTOOLS_TOTDF_RATIO } from '../modules/local/igvtoo
 include { IGVTOOLS_TOTDF as IGVTOOLS_TOTDF_DEPTH } from '../modules/local/igvtools/totdf/main'
 include { HIGHSCOREPEAKS                         } from '../modules/local/highscorepeaks/main'
 include { PLOT                                   } from '../modules/local/plot/main'
-include { BEDTOOLS_INTERSECT                     } from '../modules/nf-core/bedtools/intersect/main'
+include { BEDTOOLS_INTERSECT as TSS_INTERSECT    } from '../modules/nf-core/bedtools/intersect/main'
 include { PLOTTSS                                } from '../modules/local/plottss/main'
 include { MULTIQC                                } from '../modules/nf-core/multiqc/main'
 include { paramsSummaryMultiqc                   } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { softwareVersionsToYAML                 } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { methodsDescriptionText                 } from '../subworkflows/local/utils_nfcore_bulkfoodiepipeline_pipeline'
 include { FOOTPRINTING                           } from '../subworkflows/local/footprinting'
+include { BEDTOOLS_SPLIT as PEAKS_SPLIT          } from '../modules/nf-core/bedtools/split/main'
+include { CAT_CAT as CONCAT_FOOTPRINTS           } from '../modules/nf-core/cat/cat/main'
+include { BEDTOOLS_SORT as SORT_FOOTPRINTS       } from '../modules/nf-core/bedtools/sort/main'
+include { ADJUSTRATIO                            } from '../modules/local/adjustratio/main'
+include { GAWK as REFORMATRATIOADJUST            } from '../modules/nf-core/gawk/main'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -193,21 +198,58 @@ workflow BULKFOODIEPIPELINE {
         'igv',
     )
 
-    BEDTOOLS_INTERSECT(
+    TSS_INTERSECT(
         CALLRATIOANDDEPTH.out.sites.map { meta, sites ->
             [meta, sites, file(tss, checkIfExists: true)]
         },
         [[:], ch_sizes],
     )
 
+    PLOTTSS(
+        TSS_INTERSECT.out.intersect
+    )
+
+    ch_peak = HIGHSCOREPEAKS.out.bed
+
+    PEAKS_SPLIT(ch_peak.map { meta, bed -> [meta, bed, 10] })
+
+    ch_adjusted_sites = CALLRATIOANDDEPTH.out.sites
+    if (expected_ratio_file) {
+        ADJUSTRATIO(
+            CALLRATIOANDDEPTH.out.sites,
+            expected_ratio_file,
+            ch_fasta,
+        )
+        REFORMATRATIOADJUST(
+            ADJUSTRATIO.out.txt,
+            [],
+            false,
+        )
+        ch_adjusted_sites = REFORMATRATIOADJUST.out.output
+    }
+
+    ch_footprinting_input = ch_adjusted_sites
+        .combine(PEAKS_SPLIT.out.beds.transpose(), by: 0)
+        .map { meta, sites_file, bed_file ->
+            def chunk_num = bed_file.baseName.tokenize('.')[-1] as Integer
+            def new_meta = meta + [chunk: chunk_num]
+            [new_meta, sites_file, bed_file]
+        }
+
     FOOTPRINTING(
-        CALLRATIOANDDEPTH.out.sites,
-        HIGHSCOREPEAKS.out.bed,
+        ch_footprinting_input.map { meta, sites, _bed -> [meta, sites] },
+        ch_footprinting_input.map { meta, _sites, bed -> [meta, bed] },
         depth,
         scripts_dir,
-        expected_ratio_file,
-        ch_fasta,
     )
+
+    CONCAT_FOOTPRINTS(
+        FOOTPRINTING.out.ftprts.map { meta, files ->
+            [meta.findAll { !it.key.equals('chunk') }, files]
+        }.groupTuple()
+    )
+
+    SORT_FOOTPRINTS(CONCAT_FOOTPRINTS.out.file_out, [])
 
     //
     // Collate and save software versions
@@ -249,7 +291,7 @@ workflow BULKFOODIEPIPELINE {
         )
     )
 
-    ch_multiqc_files = ch_multiqc_files.mix(FASTQC.out.zip.collect{ it[1] }.ifEmpty([]))
+    ch_multiqc_files = ch_multiqc_files.mix(FASTQC.out.zip.collect { it[1] }.ifEmpty([]))
 
     MULTIQC(
         ch_multiqc_files.collect(),

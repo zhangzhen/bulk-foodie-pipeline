@@ -4,4 +4,4 @@ channels:
   - conda-forge
   - bioconda
 dependencies:
-  - "zhangzhen-cpl::igvtools=2.16.2"
+  - conda-forge::pigz=2.3.4
