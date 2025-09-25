@@ -81,6 +81,28 @@ then
       > $mappableMtx
 fi
 
+# Check if either cutCountsMtx or finalDHSBed has zero lines
+echo "checking for empty input files..."
+cutCountsLines=$(wc -l < "$cutCountsMtx" 2>/dev/null || echo "0")
+finalDHSLines=$(wc -l < "$finalDHSBed" 2>/dev/null || echo "0")
+
+if [ "$cutCountsLines" -eq 0 ] || [ "$finalDHSLines" -eq 0 ]; then
+    echo "Warning: Either $cutCountsMtx (${cutCountsLines} lines) or $finalDHSBed (${finalDHSLines} lines) has zero lines."
+    
+    # Create empty final output file
+    touch "$resDir/$ftprtsFile"
+    
+    # Clean up intermediate files that may exist
+    [ -f "$resDir/$finalDHSBed" ] && rm "$resDir/$finalDHSBed"
+    [ -f "$resDir/$cutCountsMtx" ] && rm "$resDir/$cutCountsMtx"
+    [ -f "$resDir/$mappableMtx" ] && rm "$resDir/$mappableMtx"
+    [ -f "$resDir/$outPrefix.datatemp" ] && rm "$resDir/$outPrefix.datatemp"
+    [ -f "$resDir/$outPrefix.nulltemp" ] && rm "$resDir/$outPrefix.nulltemp"
+    
+    echo "Empty output created at $resDir/$ftprtsFile"
+    exit 0
+fi
+
 
 
 # max size of an intergenic region
